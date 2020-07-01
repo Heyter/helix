@@ -186,6 +186,8 @@ function PANEL:OnDrop(bDragging, inventoryPanel, inventory, gridX, gridY)
 	if (!item or !bDragging) then
 		return
 	end
+	
+	local oldX, oldY = self.gridX, self.gridY
 
 	if (!IsValid(inventoryPanel)) then
 		local inventoryID = self.inventoryID
@@ -193,11 +195,24 @@ function PANEL:OnDrop(bDragging, inventoryPanel, inventory, gridX, gridY)
 		if (inventoryID) then
 			InventoryAction("drop", item.id, inventoryID, {})
 		end
-	elseif (inventoryPanel:IsAllEmpty(gridX, gridY, item.width, item.height, self)) then
-		local oldX, oldY = self.gridX, self.gridY
+	elseif (oldX != gridX or oldY != gridY or self.inventoryID != inventoryPanel.invID) then
+		local targetInventory = ix.item.inventories[inventoryPanel.invID]
+		local itemW, itemH = targetInventory:GetItemSize(item)
 
-		if (oldX != gridX or oldY != gridY or self.inventoryID != inventoryPanel.invID) then
+		local bIsEmptySlot = inventoryPanel:IsAllEmpty(gridX, gridY, itemW, itemH, self)
+		if (bIsEmptySlot) then
 			self:Move(gridX, gridY, inventoryPanel)
+		end
+		
+		local curInventory = ix.item.inventories[self:GetParent().invID]
+		if (curInventory) then
+			local itemObject = curInventory:GetItemAt(oldX, oldY)
+			if (!itemObject) then
+				return
+			end
+			
+			-- itemObject, curInv, newInventory, newX, newY, bIsEmptySlot
+			hook.Run("InventoryItemOnDrop", itemObject, curInventory, targetInventory, gridX, gridY, bIsEmptySlot)
 		end
 	end
 end
@@ -229,9 +244,14 @@ function PANEL:Move(newX, newY, givenInventory, bNoSend)
 	end
 
 	self.slots = {}
-
-	for currentX = 1, self.gridW do
-		for currentY = 1, self.gridH do
+	
+	local gridW, gridH = ix.item.inventories[givenInventory.invID]:GetItemSize({
+		width = self.gridW,
+		height = self.gridH
+	})
+	
+	for currentX = 1, gridW do
+		for currentY = 1, gridH do
 			local slot = givenInventory.slots[self.gridX + currentX - 1][self.gridY + currentY - 1]
 
 			slot.item = self
@@ -374,8 +394,10 @@ function PANEL:SetInventory(inventory, bFitParent)
 				local item = ix.item.instances[data.id]
 
 				if (item and !IsValid(self.panels[item.id])) then
+					local itemW, itemH = inventory:GetItemSize(item)
+					
 					local icon = self:AddIcon(item:GetModel() or "models/props_junk/popcan01a.mdl",
-						x, y, item.width, item.height, item:GetSkin())
+						x, y, itemW, itemH, item:GetSkin())
 
 					if (IsValid(icon)) then
 						icon:SetHelixTooltip(function(tooltip)
@@ -480,22 +502,28 @@ function PANEL:PaintDragPreview(width, height, mouseX, mouseY, itemPanel)
 
 	if (item) then
 		local inventory = ix.item.inventories[self.invID]
-		local dropX = math.ceil((mouseX - 4 - (itemPanel.gridW - 1) * 32) / iconSize)
-		local dropY = math.ceil((mouseY - self:GetPadding(2) - (itemPanel.gridH - 1) * 32) / iconSize)
+		
+		local gridW, gridH = inventory:GetItemSize({
+			width = itemPanel.gridW,
+			height = itemPanel.gridH
+		})
+		
+		local dropX = math.ceil((mouseX - 4 - (gridW - 1) * 32) / iconSize)
+		local dropY = math.ceil((mouseY - self:GetPadding(2) - (gridH - 1) * 32) / iconSize)
 
 		-- don't draw grid if we're dragging it out of bounds
 		if (inventory) then
 			local invWidth, invHeight = inventory:GetSize()
 
 			if (dropX < 1 or dropY < 1 or
-				dropX + itemPanel.gridW - 1 > invWidth or
-				dropY + itemPanel.gridH - 1 > invHeight) then
+				dropX + gridW - 1 > invWidth or
+				dropY + gridH - 1 > invHeight) then
 				return
 			end
 		end
 
-		for x = 0, itemPanel.gridW - 1 do
-			for y = 0, itemPanel.gridH - 1 do
+		for x = 0, gridW - 1 do
+			for y = 0, gridH - 1 do
 				local x2, y2 = dropX + x, dropY + y
 
 				local bEmpty = self:IsEmpty(x2, y2, itemPanel)
@@ -679,8 +707,13 @@ function PANEL:ReceiveDrop(panels, bDropped, menuIndex, x, y)
 		local inventory = ix.item.inventories[self.invID]
 
 		if (inventory and panel.OnDrop) then
-			local dropX = math.ceil((x - 4 - (panel.gridW - 1) * 32) / self.iconSize)
-			local dropY = math.ceil((y - self:GetPadding(2) - (panel.gridH - 1) * 32) / self.iconSize)
+			local itemW, itemH = inventory:GetItemSize({
+				width = panel.gridW,
+				height = panel.gridH
+			})
+			
+			local dropX = math.ceil((x - 4 - (itemW - 1) * 32) / self.iconSize)
+			local dropY = math.ceil((y - self:GetPadding(2) - (itemH - 1) * 32) / self.iconSize)
 
 			panel:OnDrop(true, self, inventory, dropX, dropY)
 		end

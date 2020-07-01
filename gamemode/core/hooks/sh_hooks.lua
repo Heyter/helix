@@ -547,9 +547,19 @@ function GM:CanTransferItem(itemObject, curInv, inventory)
 			end
 		end
 	end
+	
+	if (!itemObject) then
+		return
+	end
+	
+	if (inventory and inventory.id != 0 and curInv.id != inventory.id) then
+		if (inventory.vars and inventory.vars.isSingleSlot and (!itemObject.equip_slot or itemObject.equip_inventory != (inventory.vars.type or ""))) then
+			return false
+		end
+	end
 
 	-- we can transfer anything that isn't a bag
-	if (!itemObject or !itemObject.isBag) then
+	if (!itemObject.isBag) then
 		return
 	end
 

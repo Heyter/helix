@@ -103,6 +103,8 @@ function ix.item.RegisterInv(invType, w, h, isBag)
 	if (isBag) then
 		ix.item.inventoryTypes[invType].isBag = invType
 	end
+	
+	ix.item.inventoryTypes[invType].type = invType
 
 	return ix.item.inventoryTypes[invType]
 end
@@ -117,7 +119,7 @@ function ix.item.NewInv(owner, invType, callback)
 			local inventory = ix.item.CreateInv(invData.w, invData.h, lastID)
 
 			if (invType) then
-				inventory.vars.isBag = invType
+				inventory.vars.type = invType
 			end
 
 			if (isnumber(owner) and owner > 0) then
@@ -383,11 +385,38 @@ do
 
 			inventories[invID] = {width, height}
 			ix.item.CreateInv(width, height, invID)
+			
+			local query = mysql:Select("ix_inventories")
+				query:Select("inventory_type")
+				query:WhereIn("inventory_id", invID)
+				query:Callback(function(result)
+					if (istable(result) and #result > 0) then
+						ix.item.GetInv(invID).vars.type = result[1].inventory_type
+					end
+				end)
+			query:Execute()
 		else
 			for k, v in pairs(invID) do
 				inventories[k] = {v[1], v[2]}
 				ix.item.CreateInv(v[1], v[2], k)
 			end
+			
+			local query = mysql:Select("ix_inventories")
+				query:Select("inventory_type")
+				query:Select("inventory_id")
+				query:WhereIn("inventory_id", table.GetKeys(inventories))
+				query:Callback(function(result)
+					if (istable(result) and #result > 0) then
+						for _, v in pairs(result) do
+							local inventory = ix.item.GetInv(tonumber(v.inventory_id))
+							
+							if (inventory) then
+								inventory.vars.type = v.inventory_type
+							end
+						end
+					end
+				end)
+			query:Execute()
 		end
 
 		local query = mysql:Select("ix_items")
@@ -572,8 +601,10 @@ do
 					local panel = ix.gui["inv" .. invID]
 
 					if (IsValid(panel)) then
+						local itemW, itemH = inventory:GetItemSize(item)
+						
 						local icon = panel:AddIcon(
-							item:GetModel() or "models/props_junk/popcan01a.mdl", x, y, item.width, item.height, item:GetSkin()
+							item:GetModel() or "models/props_junk/popcan01a.mdl", x, y, itemW, itemH, item:GetSkin()
 						)
 
 						if (IsValid(icon)) then
@@ -869,13 +900,15 @@ do
 
 							return
 						end
+						
+						local itemW, itemH = inventory:GetItemSize(item)
 
-						if (inventory:CanItemFit(x, y, item.width, item.height, item)) then
+						if (inventory:CanItemFit(x, y, itemW, itemH, item)) then
 							item.gridX = x
 							item.gridY = y
 
-							for x2 = 0, item.width - 1 do
-								for y2 = 0, item.height - 1 do
+							for x2 = 0, itemW - 1 do
+								for y2 = 0, itemH - 1 do
 									local previousX = inventory.slots[oldX + x2]
 
 									if (previousX) then
@@ -884,8 +917,8 @@ do
 								end
 							end
 
-							for x2 = 0, item.width - 1 do
-								for y2 = 0, item.height - 1 do
+							for x2 = 0, itemW - 1 do
+								for y2 = 0, itemH - 1 do
 									inventory.slots[x + x2] = inventory.slots[x + x2] or {}
 									inventory.slots[x + x2][y + y2] = item
 								end

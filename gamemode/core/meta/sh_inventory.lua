@@ -51,6 +51,18 @@ function META:GetSize()
 	return self.w, self.h
 end
 
+--- Get item size based on inventory and item params.
+-- @realm shared
+-- @param ItemObj [Item]
+-- @treturn [Number width, Number height]
+function META:GetItemSize(ItemObj)
+	if self and self.vars and self.vars.isSingleSlot then
+		return 1, 1
+	end
+
+	return ItemObj.width, ItemObj.height
+end
+
 -- this is pretty good to debug/develop function to use.
 function META:Print(printPos)
 	for k, v in pairs(self:GetItems()) do
@@ -568,12 +580,14 @@ if (SERVER) then
 		if (!item) then
 			return false, "invalidItem"
 		end
+		
+		local itemW, itemH = self:GetItemSize(item)
 
 		if (isnumber(uniqueID)) then
 			local oldInvID = item.invID
 
 			if (!x and !y) then
-				x, y, bagInv = self:FindEmptySlot(item.width, item.height)
+				x, y, bagInv = self:FindEmptySlot(itemW, itemH)
 			end
 
 			if (bagInv) then
@@ -598,10 +612,10 @@ if (SERVER) then
 				item.gridY = y
 				item.invID = targetInv:GetID()
 
-				for x2 = 0, item.width - 1 do
+				for x2 = 0, itemW - 1 do
 					local index = x + x2
 
-					for y2 = 0, item.height - 1 do
+					for y2 = 0, itemH - 1 do
 						targetInv.slots[index] = targetInv.slots[index] or {}
 						targetInv.slots[index][y + y2] = item
 					end
@@ -628,7 +642,7 @@ if (SERVER) then
 			end
 		else
 			if (!x and !y) then
-				x, y, bagInv = self:FindEmptySlot(item.width, item.height)
+				x, y, bagInv = self:FindEmptySlot(itemW, itemH)
 			end
 
 			if (bagInv) then
@@ -640,10 +654,10 @@ if (SERVER) then
 			end
 
 			if (x and y) then
-				for x2 = 0, item.width - 1 do
+				for x2 = 0, itemW - 1 do
 					local index = x + x2
 
-					for y2 = 0, item.height - 1 do
+					for y2 = 0, itemH - 1 do
 						targetInv.slots[index] = targetInv.slots[index] or {}
 						targetInv.slots[index][y + y2] = true
 					end
@@ -664,11 +678,13 @@ if (SERVER) then
 				ix.item.Instance(targetInv:GetID(), uniqueID, data, x, y, function(newItem)
 					newItem.gridX = x
 					newItem.gridY = y
+					
+					local newItemW, newItemH = targetInv:GetItemSize(newItem)
 
-					for x2 = 0, newItem.width - 1 do
+					for x2 = 0, newItemW - 1 do
 						local index = x + x2
 
-						for y2 = 0, newItem.height - 1 do
+						for y2 = 0, newItemH - 1 do
 							targetInv.slots[index] = targetInv.slots[index] or {}
 							targetInv.slots[index][y + y2] = newItem
 						end

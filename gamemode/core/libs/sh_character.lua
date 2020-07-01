@@ -188,7 +188,7 @@ if (SERVER) then
 										end
 
 										inventory:SetOwner(charID)
-									end, true)
+									end)
 								else
 									local insertQuery = mysql:Insert("ix_inventories")
 										insertQuery:Insert("character_id", charID)

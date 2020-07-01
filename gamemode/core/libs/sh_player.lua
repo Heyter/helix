@@ -68,6 +68,24 @@ do
 			end
 		end
 	end
+	
+	function playerMeta:GetInventoryID(inventory_type)
+		if not inventory_type or not isstring(inventory_type) then
+			return 0
+		end
+		
+		local char = self:GetCharacter()
+
+		if (char) then
+			for k, v in pairs(char:GetInventory(true)) do
+				if istable(v) and v.id ~= 0 and v.vars and v.vars.type == inventory_type then
+					return v.id
+				end
+			end
+		end
+		
+		return 0
+	end
 
 	function playerMeta:GetClassData()
 		local char = self:GetCharacter()

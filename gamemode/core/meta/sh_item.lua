@@ -267,10 +267,12 @@ function ITEM:Remove(bNoReplication, bNoDelete)
 
 	if (self.invID > 0 and inv) then
 		local failed = false
+		
+		local itemW, itemH = inv:GetItemSize(self)
 
-		for x = self.gridX, self.gridX + (self.width - 1) do
+		for x = self.gridX, self.gridX + (itemW - 1) do
 			if (inv.slots[x]) then
-				for y = self.gridY, self.gridY + (self.height - 1) do
+				for y = self.gridY, self.gridY + (itemH - 1) do
 					local item = inv.slots[x][y]
 
 					if (item and item.id == self.id) then
@@ -288,8 +290,8 @@ function ITEM:Remove(bNoReplication, bNoDelete)
 			inv.slots = {}
 			for _, v in pairs(items) do
 				if (v.invID == inv:GetID()) then
-					for x = self.gridX, self.gridX + (self.width - 1) do
-						for y = self.gridY, self.gridY + (self.height - 1) do
+					for x = self.gridX, self.gridX + (itemW - 1) do
+						for y = self.gridY, self.gridY + (itemH - 1) do
 							inv.slots[x][y] = v.id
 						end
 					end
@@ -462,9 +464,11 @@ if (SERVER) then
 			if (invID and invID > 0 and inventory) then
 				local targetInv = inventory
 				local bagInv
+				
+				local itemW, itemH = inventory:GetItemSize(self)
 
 				if (!x and !y) then
-					x, y, bagInv = inventory:FindEmptySlot(self.width, self.height)
+					x, y, bagInv = inventory:FindEmptySlot(itemW, itemH)
 				end
 
 				if (bagInv) then
