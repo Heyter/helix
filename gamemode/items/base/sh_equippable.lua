@@ -123,8 +123,16 @@ function ITEM:CanTransfer(oldInventory, newInventory)
 	end
 end
 
+function ITEM:OnSendData()
+	-- local index = self.player:GetInventoryID(self.equip_inventory)
+	-- if index and index ~= 0 and self:IsEquipped() then
+	if (self:IsEquipped()) then
+		self:EquipItem(self.player, true)
+	end
+end
+
 function ITEM:OnLoadout()
-	if (self:GetData("equip")) then
+	if (self:IsEquipped()) then
 		self:EquipItem(self.player, true)
 	end
 end
