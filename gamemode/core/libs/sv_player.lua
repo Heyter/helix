@@ -116,7 +116,7 @@ do
     -- @param itemObj [Table]
     -- @param inventory_type [String]
     -- @return [Boolean was the item transferred successfully, String text of the error that occurred]
-	function player_meta:TransferItem(itemObj, inventory_type)
+	function playerMeta:TransferItem(itemObj, inventory_type)
 		local new_inventory = self:GetInventory(inventory_type)
 		
 		if (new_inventory <= 0) then
@@ -129,8 +129,8 @@ do
 		end
     end
 	
-	function playerMeta:CreateEquippableInventory(inventory_type)
-		local character = self:GetCharacter()
+	function playerMeta:CreateEquippableInventory(inventory_type, character, should_reset)
+		character = character or self:GetCharacter()
 		local equip_inv = ix.item.equippable_inventories[inventory_type]
 		
 		if character and equip_inv then
@@ -139,7 +139,7 @@ do
 			
 			local restoreInv = self:GetInventory(inventory_type)
 			
-			if (restoreInv > 0) then
+			if (not should_reset and restoreInv > 0) then
 				ix.item.RestoreInv(restoreInv, w, h, function(inventory)
 					inventory.vars.custom_slot = {w, h}
 					inventory.vars.inventory_type = inventory_type

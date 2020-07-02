@@ -761,6 +761,41 @@ hook.Add("CreateMenuButtons", "ixInventory", function(tabs)
 			end
 
 			ix.gui.inv1 = panel
+			
+			-- Equipped inventories
+			if LocalPlayer().inventories then
+				for inventory_type, invID in pairs(LocalPlayer().inventories) do
+					panel = ix.gui["inv"..invID]
+					local inventory = ix.item.inventories[invID]
+					local parent = IsValid(ix.gui.menuInventoryContainer) and ix.gui.menuInventoryContainer or ix.gui.openedStorage
+					
+					if (IsValid(panel)) then
+						panel:Remove()
+					end
+					
+					if (inventory and inventory.slots) then
+						panel = vgui.Create("ixInventory", IsValid(parent) and parent or nil)
+						panel:SetInventory(inventory)
+						panel:SetSizable(false)
+						panel:SetTitle(inventory.vars and inventory.vars.inventory_type or "Equipped Slot")
+
+						if (parent != ix.gui.menuInventoryContainer) then
+							panel:Center()
+
+							if (parent == ix.gui.openedStorage) then
+								panel:MakePopup()
+							end
+						else
+							panel:MoveToFront()
+						end
+
+						ix.gui["inv"..invID] = panel
+					else
+						ErrorNoHalt("[Helix] Attempt to view an uninitialized inventory '"..invID.."'\n")
+					end
+				end
+			end
+			
 
 			if (ix.option.Get("openBags", true)) then
 				for _, v in pairs(inventory:GetItems()) do

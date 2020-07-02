@@ -405,6 +405,13 @@ function GM:OnCharacterCreated(client, character)
 	if (faction and faction.OnCharacterCreated) then
 		faction:OnCharacterCreated(client, character)
 	end
+	
+	-- Register equippable inventories
+	if (IsValid(client)) then
+		for inventory_type in pairs(ix.item.equippable_inventories) do
+			client:CreateEquippableInventory(inventory_type, character, true)
+		end
+	end
 end
 
 function GM:GetDefaultCharacterName(client, faction)

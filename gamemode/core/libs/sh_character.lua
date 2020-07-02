@@ -72,7 +72,7 @@ if (SERVER) then
 						local w, h = ix.config.Get("inventoryWidth"), ix.config.Get("inventoryHeight")
 						local character = ix.char.New(data, lastID, client, data.steamID)
 						local inventory = ix.item.CreateInv(w, h, invLastID)
-						inventory.vars.test_case_3 = "test_case_3"
+						-- inventory.vars.test_case_3 = "test_case_3"
 						character.vars.inv = {inventory}
 						inventory:SetOwner(lastID)
 
@@ -172,7 +172,7 @@ if (SERVER) then
 													w, h = invType.w, invType.h
 												end
 											end
-
+											
 											inventories[tonumber(v2.inventory_id)] = ix.item.equippable_inventories[v2.inventory_type] or {w, h, v2.inventory_type}
 										end
 									end
@@ -189,7 +189,7 @@ if (SERVER) then
 											
 											inventory.vars.isBag = inventoryType
 											inventory.vars.inventory_type = inventoryType
-											inventory.vars.test_case_2 = "test_case_2"
+											-- inventory.vars.test_case_2 = "test_case_2"
 											
 											table.insert(character.vars.inv, inventory)
 										else
@@ -204,12 +204,19 @@ if (SERVER) then
 										insertQuery:Callback(function(_, status, lastID)
 											local w, h = ix.config.Get("inventoryWidth"), ix.config.Get("inventoryHeight")
 											local inventory = ix.item.CreateInv(w, h, lastID)
-											inventory.vars.test_case_1 = "test_case_1"
+											-- inventory.vars.test_case_1 = "test_case_1"
 											inventory:SetOwner(charID)
 
 											character.vars.inv = {
 												inventory
 											}
+											
+											-- Register equippable inventories
+											if (IsValid(client)) then
+												for inventory_type in pairs(ix.item.equippable_inventories) do
+													client:CreateEquippableInventory(inventory_type, character, true)
+												end
+											end
 										end)
 									insertQuery:Execute()
 								end

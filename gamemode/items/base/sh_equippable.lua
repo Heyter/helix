@@ -74,7 +74,10 @@ end
 function ITEM:PostUnequipped(client)
 end
 
-function ITEM:EquipItem(client, should_equip, transfer_to_inv)
+function ITEM:PlayerDeath(client)
+end
+
+function ITEM:EquipItem(client, should_equip)
 	if (should_equip) then
 		self:PostEquipped(client)
 		self:SetData("inventory_type", self.equip_inventory)
@@ -94,6 +97,7 @@ function ITEM:CanTransfer(oldInventory, newInventory)
 				return false
 			end
 			
+			-- TODO: GetEquipabbleItems
 			for _, v in pairs(newInventory:GetItems()) do
 				if v.equip_slot and v:IsEquipped() and v.id != self.id then
 					local itemTable = ix.item.instances[v.id]
@@ -145,7 +149,7 @@ hook.Add("PlayerDeath", "ixStripEquippableItem", function(client)
 	if (character) then
 		for _, v in pairs(client:GetEquipabbleItems()) do
 			if (v.base == "base_equippable" and v:IsEquipped()) then
-				v:EquipItem(client, false)
+				v:PlayerDeath(client)
 			end
 		end
 	end
