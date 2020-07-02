@@ -78,13 +78,55 @@ do
 
 		if (char) then
 			for k, v in pairs(char:GetInventory(true)) do
-				if istable(v) and v.id ~= 0 and v.vars and v.vars.type == inventory_type then
+				if istable(v) and v.id ~= 0 and v.vars and v.vars.inventory_type == inventory_type then
 					return v.id
 				end
 			end
 		end
 		
 		return 0
+	end
+	
+	function playerMeta:GetInventory(inventory_type)
+		return self.inventories and self.inventories[inventory_type] or 0
+	end
+	
+	function playerMeta:RegisterInventories(character)
+		self.inventories = self.inventories or {}
+		
+		character = character or self:GetCharacter()
+		
+		for k, v in ipairs(character:GetInventory(true)) do
+			if (istable(v) and v.vars and v.vars.inventory_type) then
+				self.inventories[v.vars.inventory_type] = v.id
+			end
+		end
+	end
+	
+	function playerMeta:GetEquipabbleItems()
+		local items, invSkip = {}, {}
+		
+		if (IsValid(self) and self.inventories) then
+			for _, inventoryID in pairs(self.inventories) do
+				if (inventoryID > 0 and not invSkip[inventoryID]) then
+					invSkip[inventoryID] = true
+					
+					local inventory = ix.item.inventories[inventoryID]
+					if istable(inventory) and inventory.slots then
+						for _, v2 in pairs(inventory.slots) do
+							for _, v3 in pairs(v2) do
+								if (istable(v2) and !items[v3.id] and v3.invID == inventory.id and v3.equip_slot) then
+									items[v3.id] = v3
+								end
+							end
+						end
+					end
+				end
+			end
+		end
+		
+		invSkip = nil
+		return items
 	end
 
 	function playerMeta:GetClassData()

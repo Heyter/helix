@@ -56,8 +56,8 @@ end
 -- @param ItemObj [Item]
 -- @treturn [Number width, Number height]
 function META:GetItemSize(ItemObj)
-	if self and self.vars and self.vars.isSingleSlot then
-		return 1, 1
+	if self and self.vars and self.vars.custom_slot then
+		return self.vars.custom_slot[1], self.vars.custom_slot[2]
 	end
 
 	return ItemObj.width, ItemObj.height

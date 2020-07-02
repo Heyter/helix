@@ -97,6 +97,19 @@ function ix.item.Instance(index, uniqueID, itemData, x, y, callback, characterID
 	end
 end
 
+ix.item.equippable_inventories = {}
+
+function ix.item.RegisterEquippableInv(inventory_type, w, h, data)
+	if (istable(inventory_type)) then
+		for k, v in ipairs(inventory_type) do
+			ix.item.equippable_inventories[v[1]] = {v[2], v[3], v[4]}
+		end
+	else
+		data = data or {custom_slot = {w, h}}
+		ix.item.equippable_inventories[inventory_type] = {w, h, inventory_type, data}
+	end
+end
+
 function ix.item.RegisterInv(invType, w, h, isBag)
 	ix.item.inventoryTypes[invType] = {w = w, h = h}
 
@@ -104,22 +117,21 @@ function ix.item.RegisterInv(invType, w, h, isBag)
 		ix.item.inventoryTypes[invType].isBag = invType
 	end
 	
-	ix.item.inventoryTypes[invType].type = invType
+	ix.item.inventoryTypes[invType].inventory_type = invType
 
 	return ix.item.inventoryTypes[invType]
 end
 
-function ix.item.NewInv(owner, invType, callback)
-	local invData = ix.item.inventoryTypes[invType] or {w = 1, h = 1}
-
+function ix.item.NewInv(owner, invType, callback, bStopSync)
 	local query = mysql:Insert("ix_inventories")
 		query:Insert("inventory_type", invType)
 		query:Insert("character_id", owner)
 		query:Callback(function(result, status, lastID)
+			local invData = ix.item.inventoryTypes[invType] or {w = 1, h = 1}
 			local inventory = ix.item.CreateInv(invData.w, invData.h, lastID)
 
 			if (invType) then
-				inventory.vars.type = invType
+				inventory.vars.inventory_type = invType
 			end
 
 			if (isnumber(owner) and owner > 0) then
@@ -128,7 +140,7 @@ function ix.item.NewInv(owner, invType, callback)
 
 				inventory:SetOwner(owner)
 
-				if (IsValid(client)) then
+				if (not bStopSync and IsValid(client)) then
 					inventory:Sync(client)
 				end
 			end
@@ -375,7 +387,7 @@ do
 	-- 	[11] = {7, 4}
 	-- })
 	-- -- inventories 10 and 11 with sizes (5, 5) and (7, 4) will be loaded
-	function ix.item.RestoreInv(invID, width, height, callback)
+	function ix.item.RestoreInv(invID, width, height, callback, bNotSetType)
 		local inventories = {}
 
 		if (!istable(invID)) then
@@ -386,37 +398,41 @@ do
 			inventories[invID] = {width, height}
 			ix.item.CreateInv(width, height, invID)
 			
-			local query = mysql:Select("ix_inventories")
-				query:Select("inventory_type")
-				query:WhereIn("inventory_id", invID)
-				query:Callback(function(result)
-					if (istable(result) and #result > 0) then
-						ix.item.GetInv(invID).vars.type = result[1].inventory_type
-					end
-				end)
-			query:Execute()
+			if (not bNotSetType) then -- sorry for the name of the variable.
+				local query = mysql:Select("ix_inventories")
+					query:Select("inventory_type")
+					query:Where("inventory_id", invID)
+					query:Callback(function(result)
+						if (istable(result) and #result > 0) then
+							ix.item.GetInv(invID).vars.inventory_type = result[1].inventory_type
+						end
+					end)
+				query:Execute()
+			end
 		else
 			for k, v in pairs(invID) do
 				inventories[k] = {v[1], v[2]}
 				ix.item.CreateInv(v[1], v[2], k)
 			end
 			
-			local query = mysql:Select("ix_inventories")
-				query:Select("inventory_type")
-				query:Select("inventory_id")
-				query:WhereIn("inventory_id", table.GetKeys(inventories))
-				query:Callback(function(result)
-					if (istable(result) and #result > 0) then
-						for _, v in pairs(result) do
-							local inventory = ix.item.GetInv(tonumber(v.inventory_id))
-							
-							if (inventory) then
-								inventory.vars.type = v.inventory_type
+			if (not bNotSetType) then
+				local query = mysql:Select("ix_inventories")
+					query:Select("inventory_type")
+					query:Select("inventory_id")
+					query:WhereIn("inventory_id", table.GetKeys(inventories))
+					query:Callback(function(result)
+						if (istable(result) and #result > 0) then
+							for _, v in pairs(result) do
+								local inventory = ix.item.GetInv(tonumber(v.inventory_id))
+								
+								if (inventory) then
+									inventory.vars.inventory_type = v.inventory_type
+								end
 							end
 						end
-					end
-				end)
-			query:Execute()
+					end)
+				query:Execute()
+			end
 		end
 
 		local query = mysql:Select("ix_items")
@@ -467,6 +483,8 @@ do
 									item2.invID = itemInvID
 									item2.characterID = characterID
 									item2.playerID = (playerID == "" or playerID == "NULL") and nil or playerID
+									
+									item2.width, item2.height = inventory:GetItemSize(item2)
 
 									for x2 = 0, item2.width - 1 do
 										for y2 = 0, item2.height - 1 do

@@ -288,6 +288,8 @@ function GM:CharacterLoaded(character)
 				timer.Remove(uniqueID)
 			end
 		end)
+		
+		client:RegisterInventories(character)
 	end
 end
 
@@ -546,6 +548,13 @@ function GM:PostPlayerLoadout(client)
 					character:AddBoost(v.uniqueID, attribKey, attribValue)
 				end
 			end
+		end
+	end
+	
+	-- Equippable inventory
+	if (character) then
+		for _, v in pairs(client:GetEquipabbleItems()) do
+			v:Call("OnLoadout", client)
 		end
 	end
 

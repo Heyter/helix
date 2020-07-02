@@ -72,7 +72,7 @@ if (SERVER) then
 						local w, h = ix.config.Get("inventoryWidth"), ix.config.Get("inventoryHeight")
 						local character = ix.char.New(data, lastID, client, data.steamID)
 						local inventory = ix.item.CreateInv(w, h, invLastID)
-
+						inventory.vars.test_case_3 = "test_case_3"
 						character.vars.inv = {inventory}
 						inventory:SetOwner(lastID)
 
@@ -154,7 +154,7 @@ if (SERVER) then
 							invQuery:Where("character_id", charID)
 							invQuery:Callback(function(info)
 								if (istable(info) and #info > 0) then
-									local inventories = {}
+									local inventories = {vars = {}}
 
 									for _, v2 in pairs(info) do
 										if (v2.inventory_type and isstring(v2.inventory_type) and v2.inventory_type == "NULL") then
@@ -173,7 +173,7 @@ if (SERVER) then
 												end
 											end
 
-											inventories[tonumber(v2.inventory_id)] = {w, h, v2.inventory_type}
+											inventories[tonumber(v2.inventory_id)] = ix.item.equippable_inventories[v2.inventory_type] or {w, h, v2.inventory_type}
 										end
 									end
 
@@ -181,7 +181,16 @@ if (SERVER) then
 										local inventoryType = inventories[inventory:GetID()][3]
 
 										if (inventoryType) then
+											local inventoryVars = inventories[inventory:GetID()][4]
+											
+											if (inventoryVars) then
+												inventory.vars = inventoryVars
+											end
+											
 											inventory.vars.isBag = inventoryType
+											inventory.vars.inventory_type = inventoryType
+											inventory.vars.test_case_2 = "test_case_2"
+											
 											table.insert(character.vars.inv, inventory)
 										else
 											character.vars.inv[1] = inventory
@@ -195,6 +204,7 @@ if (SERVER) then
 										insertQuery:Callback(function(_, status, lastID)
 											local w, h = ix.config.Get("inventoryWidth"), ix.config.Get("inventoryHeight")
 											local inventory = ix.item.CreateInv(w, h, lastID)
+											inventory.vars.test_case_1 = "test_case_1"
 											inventory:SetOwner(charID)
 
 											character.vars.inv = {

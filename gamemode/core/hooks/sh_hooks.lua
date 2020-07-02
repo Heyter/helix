@@ -553,7 +553,7 @@ function GM:CanTransferItem(itemObject, curInv, inventory)
 	end
 	
 	if (inventory and inventory.id != 0 and curInv.id != inventory.id) then
-		if (inventory.vars and inventory.vars.isSingleSlot and (!itemObject.equip_slot or itemObject.equip_inventory != (inventory.vars.type or ""))) then
+		if (inventory.vars and inventory.vars.custom_slot and (!itemObject.equip_slot or itemObject.equip_inventory != (inventory.vars.inventory_type or ""))) then
 			return false
 		end
 	end

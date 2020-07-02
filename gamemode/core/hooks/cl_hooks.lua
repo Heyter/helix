@@ -335,12 +335,16 @@ function GM:LoadIntro()
 	end
 end
 
-function GM:CharacterLoaded()
+function GM:CharacterLoaded(character)
+	local client = LocalPlayer()
+	character = character or client.GetCharacter and client:GetCharacter()
+	
 	local menu = ix.gui.characterMenu
-
 	if (IsValid(menu)) then
-		menu:Close((LocalPlayer().GetCharacter and LocalPlayer():GetCharacter()) and true or nil)
+		menu:Close((character) and true or nil)
 	end
+	
+	client:RegisterInventories(character)
 end
 
 function GM:InitializedConfig()

@@ -2,7 +2,7 @@ ITEM.name = "Equipment Base"
 ITEM.description = "An item that can be equipped."
 ITEM.category = "Equipment"
 ITEM.equip_slot = 'slot_accessory'
-ITEM.equip_inventory = 'hand'
+ITEM.equip_inventory = 'inventory_hand'
 
 ITEM.action_sounds = {
 	['equip'] = 'items/battery_pickup.wav',
@@ -31,11 +31,7 @@ ITEM.functions.EquipUn = {
 	tip = "equipTip",
 	icon = "icon16/cross.png",
 	OnRun = function(item)
-		local invID = item.player:GetCharacter():GetInventory(true)[1]:GetID()
-		
-		if (invID ~= 0) then
-			item:Transfer(invID)
-		end
+		item.player:TransferItem(item, 'NULL')
 		
 		return false
 	end,
@@ -51,11 +47,7 @@ ITEM.functions.Equip = {
 	tip = "equipTip",
 	icon = "icon16/tick.png",
 	OnRun = function(item)
-		local invID = item.player:GetInventoryID(item.equip_inventory)
-		
-		if invID and invID ~= 0 then
-			item:Transfer(invID)
-		end
+		item.player:TransferItem(item, item.equip_inventory)
 		
 		return false
 	end,
@@ -82,7 +74,7 @@ end
 function ITEM:PostUnequipped(client)
 end
 
-function ITEM:EquipItem(client, should_equip)
+function ITEM:EquipItem(client, should_equip, transfer_to_inv)
 	if (should_equip) then
 		self:PostEquipped(client)
 		self:SetData("inventory_type", self.equip_inventory)
@@ -96,7 +88,7 @@ end
 
 function ITEM:CanTransfer(oldInventory, newInventory)
 	if (newInventory and newInventory.vars) then
-		local inv_type = newInventory.vars.type
+		local inv_type = newInventory.vars.inventory_type
 		if (inv_type == self.equip_inventory) then
 			if self:CanEquip(player) == false then
 				return false
@@ -115,19 +107,11 @@ function ITEM:CanTransfer(oldInventory, newInventory)
 				end
 			end
 		elseif inv_type ~= self.equip_inventory and self:IsEquipped() then
-		--elseif (oldInventory and oldInventory.vars and oldInventory.vars.type == self.equip_inventory and self:IsEquipped()) then
+		--elseif (oldInventory and oldInventory.vars and oldInventory.vars.inventory_type == self.equip_inventory and self:IsEquipped()) then
 			if self:CanUnequip(self:GetOwner()) == false then
 				return false
 			end
 		end
-	end
-end
-
-function ITEM:OnSendData()
-	-- local index = self.player:GetInventoryID(self.equip_inventory)
-	-- if index and index ~= 0 and self:IsEquipped() then
-	if (self:IsEquipped()) then
-		self:EquipItem(self.player, true)
 	end
 end
 
@@ -138,19 +122,31 @@ function ITEM:OnLoadout()
 end
 
 function ITEM:OnTransferred(curInv, newInventory)
-	if newInventory and newInventory.vars and newInventory.vars.type == self.equip_inventory and isfunction(newInventory.GetOwner) then
-		local owner = newInventory:GetOwner()
-		if (IsValid(owner)) then
-			owner:EmitSound(self.action_sounds['equip'])
-			self:EquipItem(owner, true)
-		end
-	end
-	
-	if curInv and curInv.vars and curInv.vars.type == self.equip_inventory and isfunction(curInv.GetOwner) then
+	if curInv and curInv.vars and curInv.vars.inventory_type == self.equip_inventory and isfunction(curInv.GetOwner) then
 		local owner = curInv:GetOwner()
 		if (IsValid(owner)) then
 			owner:EmitSound(self.action_sounds['unequip'])
 			self:EquipItem(owner, false)
 		end
 	end
+	
+	if newInventory and newInventory.vars and newInventory.vars.inventory_type == self.equip_inventory and isfunction(newInventory.GetOwner) then
+		local owner = newInventory:GetOwner()
+		if (IsValid(owner)) then
+			owner:EmitSound(self.action_sounds['equip'])
+			self:EquipItem(owner, true)
+		end
+	end
 end
+
+hook.Add("PlayerDeath", "ixStripEquippableItem", function(client)
+	local character = client:GetCharacter()
+	
+	if (character) then
+		for _, v in pairs(client:GetEquipabbleItems()) do
+			if (v.base == "base_equippable" and v:IsEquipped()) then
+				v:EquipItem(client, false)
+			end
+		end
+	end
+end)

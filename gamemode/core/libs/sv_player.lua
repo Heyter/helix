@@ -109,3 +109,64 @@ do
 		return weapon
 	end
 end
+
+do
+    --- Transfers item to a specified inventory of the player.
+    -- Takes item only from the specified inventory.
+    -- @param itemObj [Table]
+    -- @param inventory_type [String]
+    -- @return [Boolean was the item transferred successfully, String text of the error that occurred]
+	function player_meta:TransferItem(itemObj, inventory_type)
+		local new_inventory = self:GetInventory(inventory_type)
+		
+		if (new_inventory <= 0) then
+			new_inventory = self:GetInventoryID(inventory_type)
+			-- if inventory_type == 'NULL' then self:GetCharacter():GetInventory(true)[1]:GetID()
+		end
+		
+		if (new_inventory > 0) then
+			itemObj:Transfer(new_inventory)
+		end
+    end
+	
+	function playerMeta:CreateEquippableInventory(inventory_type)
+		local character = self:GetCharacter()
+		local equip_inv = ix.item.equippable_inventories[inventory_type]
+		
+		if character and equip_inv then
+			local w, h = equip_inv[1], equip_inv[2]
+			ix.item.RegisterInv(inventory_type, w, h)
+			
+			local restoreInv = self:GetInventory(inventory_type)
+			
+			if (restoreInv > 0) then
+				ix.item.RestoreInv(restoreInv, w, h, function(inventory)
+					inventory.vars.custom_slot = {w, h}
+					inventory.vars.inventory_type = inventory_type
+					
+					inventory:SetOwner(character:GetID())
+					
+					if (IsValid(self)) then
+						inventory:AddReceiver(self)
+						inventory:Sync(self)
+						
+						self:RegisterInventories(character)
+					end
+				end, true)
+			else
+				ix.item.NewInv(character:GetID(), inventory_type, function(inventory)
+					inventory.vars.custom_slot = {w, h}
+					
+					table.insert(character.vars.inv, inventory)
+					
+					if (IsValid(self)) then
+						inventory:AddReceiver(self)
+						inventory:Sync(self)
+						
+						self:RegisterInventories(character)
+					end
+				end, true)
+			end
+		end
+	end
+end
