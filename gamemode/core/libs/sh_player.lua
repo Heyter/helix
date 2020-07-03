@@ -88,6 +88,10 @@ do
 	end
 	
 	function playerMeta:GetInventory(inventory_type)
+		if not inventory_type then
+			return self.inventories
+		end
+		
 		return self.inventories and self.inventories[inventory_type] or 0
 	end
 	
@@ -103,20 +107,26 @@ do
 		end
 	end
 	
-	function playerMeta:GetEquipabbleItems()
+	function playerMeta:GetEquipabbleItems(inventory_type)
 		local items, invSkip = {}, {}
 		
 		if (IsValid(self) and self.inventories) then
-			for _, inventoryID in pairs(self.inventories) do
+			local invData = self.inventories
+			
+			if (inventory_type and isstring(inventory_type) and invData[inventory_type]) then
+				invData = {[1] = invData[inventory_type]}
+			end
+			
+			for _, inventoryID in pairs(invData) do
 				if (inventoryID > 0 and not invSkip[inventoryID]) then
 					invSkip[inventoryID] = true
 					
 					local inventory = ix.item.inventories[inventoryID]
 					if istable(inventory) and inventory.slots then
-						for _, v2 in pairs(inventory.slots) do
-							for _, v3 in pairs(v2) do
-								if (istable(v2) and !items[v3.id] and v3.invID == inventory.id and v3.equip_slot) then
-									items[v3.id] = v3
+						for _, v in pairs(inventory.slots) do
+							for _, v2 in pairs(v) do
+								if (istable(v) and !items[v2.id] and v2.invID == inventory.id and v2.equip_slot) then
+									items[v2.id] = v2
 								end
 							end
 						end

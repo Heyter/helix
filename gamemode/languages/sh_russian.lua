@@ -435,5 +435,9 @@ LANGUAGE = {
 	cmdOOC = "Отправить сообщение в глобальный out-of-character чат .",
 	cmdLOOC = "Отправить сообщение в локальный out-of-character чат.",
 
-	Instructions = "Информация"
+	Instructions = "Информация",
+	
+	-- Reworked inventory
+	cantEquipItem = "Данный предмет нельзя экипировать.",
+	slotOccupied = "Слот занят другим предметом."
 }

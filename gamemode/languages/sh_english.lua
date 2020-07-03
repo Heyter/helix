@@ -441,5 +441,9 @@ LANGUAGE = {
 	cmdY = "Yell something to the people around you.",
 	cmdEvent = "Make something perform an action that everyone can see.",
 	cmdOOC = "Sends a message in global out-of-character chat.",
-	cmdLOOC = "Sends a message in local out-of-character chat."
+	cmdLOOC = "Sends a message in local out-of-character chat.",
+	
+	-- Reworked inventory
+	cantEquipItem = "This item cannot be equipped.",
+	slotOccupied = "The slot is occupied with another item."
 }

@@ -99,15 +99,44 @@ end
 
 ix.item.equippable_inventories = {}
 
-function ix.item.RegisterEquippableInv(inventory_type, w, h, data)
-	if (istable(inventory_type)) then
-		for k, v in ipairs(inventory_type) do
-			ix.item.equippable_inventories[v[1]] = {v[2], v[3], v[4]}
-		end
-	else
-		data = data or {custom_slot = {w, h}}
-		ix.item.equippable_inventories[inventory_type] = {w, h, inventory_type, data}
-	end
+function ix.item.RegisterEquippableInv()
+    return {
+        [1] = 1, -- width inventory
+        [2] = 1, -- height inventory
+        [3] = type, -- Inventory type
+        [4] = {}, -- Inventory Vars
+        [5] = {}, -- Derma
+        SetSize = function(this, w, h, bNotSetCustomSlot)
+            this[1] = w
+            this[2] = h
+            
+            if (not bNotSetCustomSlot) then
+                this[4].custom_slot = {w, h}
+            end
+        end,
+		SetInventoryVars = function(this, data)
+			this[4] = table.Merge(this[4], data)
+		end,
+        SetTitle = function(this, title)
+            this[5].title = title
+        end,
+		GetTitle = function(this)
+			return this[5].title
+		end,
+        SetIcon = function(this, icon)
+            this[5].icon = icon
+        end,
+		GetIcon = function(this)
+			return this[5].icon or "icon16/box.png"
+		end,
+		InventoryPaint = function(this, w, h)
+		end,
+        New = function(this, type)
+			this[3] = type
+            ix.item.equippable_inventories[type] = this
+            return this
+        end
+    }
 end
 
 function ix.item.RegisterInv(invType, w, h, isBag)

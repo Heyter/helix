@@ -372,6 +372,10 @@ function PANEL:SetInventory(inventory, bFitParent)
 	if (inventory.slots) then
 		local invWidth, invHeight = inventory:GetSize()
 		self.invID = inventory:GetID()
+		
+		if (inventory.vars and inventory.vars.inventory_type) then
+			self.inventory_type = inventory.vars.inventory_type
+		end
 
 		if (IsValid(ix.gui.inv1) and ix.gui.inv1.childPanels and inventory != LocalPlayer():GetCharacter():GetInventory()) then
 			self:SetIconSize(ix.gui.inv1:GetIconSize())
@@ -449,6 +453,13 @@ function PANEL:BuildSlots()
 
 		surface.SetDrawColor(0, 0, 0, 250)
 		surface.DrawOutlinedRect(1, 1, w - 2, h - 2)
+		
+		if not slot.inventory_type then return end
+		
+		local equippableInv = ix.item.equippable_inventories[slot.inventory_type]
+		if (equippableInv) then
+			equippableInv:InventoryPaint(w, h)
+		end
 	end
 
 	for _, v in ipairs(self.slots) do
@@ -467,6 +478,11 @@ function PANEL:BuildSlots()
 			slot:SetZPos(-999)
 			slot.gridX = x
 			slot.gridY = y
+			
+			if self.inventory_type then
+				slot.inventory_type = self.inventory_type
+			end
+			
 			slot:SetPos((x - 1) * iconSize + 4, (y - 1) * iconSize + self:GetPadding(2))
 			slot:SetSize(iconSize, iconSize)
 			slot.Paint = PaintSlot
@@ -763,36 +779,39 @@ hook.Add("CreateMenuButtons", "ixInventory", function(tabs)
 			ix.gui.inv1 = panel
 			
 			-- Equipped inventories
-			if LocalPlayer().inventories then
-				for inventory_type, invID in pairs(LocalPlayer().inventories) do
-					panel = ix.gui["inv"..invID]
-					local inventory = ix.item.inventories[invID]
-					local parent = IsValid(ix.gui.menuInventoryContainer) and ix.gui.menuInventoryContainer or ix.gui.openedStorage
-					
-					if (IsValid(panel)) then
-						panel:Remove()
-					end
-					
-					if (inventory and inventory.slots) then
-						panel = vgui.Create("ixInventory", IsValid(parent) and parent or nil)
-						panel:SetInventory(inventory)
-						panel:SetSizable(false)
-						panel:SetTitle(inventory.vars and inventory.vars.inventory_type or "Equipped Slot")
+			for inventory_type, invID in pairs(LocalPlayer():GetInventory()) do
+				panel = ix.gui["inv"..invID]
+				inventory = ix.item.inventories[invID]
+				if inventory.vars and (not inventory.vars.inventory_type or inventory.vars.inventory_type == "NULL") then
+					continue
+				end
+				
+				local parent = IsValid(ix.gui.menuInventoryContainer) and ix.gui.menuInventoryContainer or ix.gui.openedStorage
+				
+				if (IsValid(panel)) then
+					panel:Remove()
+				end
+				
+				if (inventory and inventory.slots) then
+					local inventories = ix.item.equippable_inventories[inventory_type]
+					panel = vgui.Create("ixInventory", IsValid(parent) and parent or nil)
+					panel:SetInventory(inventory)
+					panel:SetSizable(false)
+					panel:SetTitle(inventories:GetTitle() or inventory.vars and inventory.vars.inventory_type or "Equipped Slot")
 
-						if (parent != ix.gui.menuInventoryContainer) then
-							panel:Center()
+					if (parent != ix.gui.menuInventoryContainer) then
+						panel:Center()
 
-							if (parent == ix.gui.openedStorage) then
-								panel:MakePopup()
-							end
-						else
-							panel:MoveToFront()
+						if (parent == ix.gui.openedStorage) then
+							panel:MakePopup()
 						end
-
-						ix.gui["inv"..invID] = panel
 					else
-						ErrorNoHalt("[Helix] Attempt to view an uninitialized inventory '"..invID.."'\n")
+						panel:MoveToFront()
 					end
+
+					ix.gui["inv"..invID] = panel
+				else
+					ErrorNoHalt("[Helix] Attempt to view an uninitialized inventory '"..invID.."'\n")
 				end
 			end
 			

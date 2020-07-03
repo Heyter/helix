@@ -117,11 +117,10 @@ do
     -- @param inventory_type [String]
     -- @return [Boolean was the item transferred successfully, String text of the error that occurred]
 	function playerMeta:TransferItem(itemObj, inventory_type)
-		local new_inventory = self:GetInventory(inventory_type)
+		local new_inventory = inventory_type ~= 'NULL' and self:GetInventory(inventory_type) or self:GetCharacter():GetInventory(true)[1]:GetID()
 		
 		if (new_inventory <= 0) then
 			new_inventory = self:GetInventoryID(inventory_type)
-			-- if inventory_type == 'NULL' then self:GetCharacter():GetInventory(true)[1]:GetID()
 		end
 		
 		if (new_inventory > 0) then

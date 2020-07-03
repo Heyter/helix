@@ -91,28 +91,32 @@ end
 
 function ITEM:CanTransfer(oldInventory, newInventory)
 	if (newInventory and newInventory.vars) then
+		local client = self:GetOwner()
+		
 		local inv_type = newInventory.vars.inventory_type
 		if (inv_type == self.equip_inventory) then
-			if self:CanEquip(player) == false then
+			if self:CanEquip(client) == false then
 				return false
 			end
 			
-			-- TODO: GetEquipabbleItems
 			for _, v in pairs(newInventory:GetItems()) do
-				if v.equip_slot and v:IsEquipped() and v.id != self.id then
-					local itemTable = ix.item.instances[v.id]
-					if (not itemTable) then
+				if v.equip_slot and v:IsEquipped() and v.id ~= self.id then
+					if (not ix.item.instances[v.id]) then
 						return false
 					end
 					
 					if v.equip_slot == self.equip_slot then
+						if (IsValid(client)) then
+							client:NotifyLocalized("slotOccupied")
+						end
+						
 						return false
 					end
 				end
 			end
 		elseif inv_type ~= self.equip_inventory and self:IsEquipped() then
 		--elseif (oldInventory and oldInventory.vars and oldInventory.vars.inventory_type == self.equip_inventory and self:IsEquipped()) then
-			if self:CanUnequip(self:GetOwner()) == false then
+			if self:CanUnequip(client) == false then
 				return false
 			end
 		end
