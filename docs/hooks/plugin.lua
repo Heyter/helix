@@ -850,3 +850,56 @@ end
 --- @realm client
 function WeaponSelectSound(weapon)
 end
+
+--- @realm shared
+-- Register Equippable inventory
+-- @usage function PLUGIN:InitializedPlugins()
+	-- local right_hand = ix.item.RegisterEquippableInv():New("right_hand") -- right_hand = inventory_type
+	-- right_hand:SetSize(1, 1) -- Can set own size
+	-- right_hand:SetIcon(Material("icon16/accept.png"))
+	
+	-- function right_hand:InventoryPaint(w,h) -- Called in 
+		-- surface.SetDrawColor( 255, 255, 255, 35 )
+		-- surface.SetMaterial( self:GetIcon() )
+		-- surface.DrawTexturedRect( 0, 0, w, h )
+	-- end
+	-- right_hand = nil
+-- end
+function ix.item.RegisterEquippableInv()
+end
+
+--- @realm shared
+-- Get Equippable inventories
+-- @usage player:GetInventory("right_hand")
+-- @param inventory_type [String]
+-- @treturn invID
+function playerMeta:GetInventory(inventory_type)
+end
+
+--- @realm server
+-- Transfers item to a specified inventory of the player.
+-- Takes item only from the specified inventory.
+-- @param itemObj [Table]
+-- @param inventory_type [String]
+function playerMeta:TransferItem(itemObj, inventory_type)
+end
+
+--- @realm server
+-- Create NewInv or RestoreInv
+-- @param inventory_type [String]
+-- @param character [Table]
+-- @param should_reset [Boolean]
+function playerMeta:CreateEquippableInventory(inventory_type, character, should_reset)
+end
+
+--- @realm shared
+function playerMeta:RegisterInventories(character)
+end
+
+--- @realm shared
+-- Get all items from player inventory/inventories
+-- @param inventory_type [String]
+-- @treturn [Items table]
+-- @usage playerMeta:GetEquipabbleItems() or playerMeta:GetEquipabbleItems("right_hand")
+function playerMeta:GetEquipabbleItems(inventory_type)
+end
