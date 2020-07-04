@@ -854,7 +854,7 @@ end
 --- @realm shared
 -- Register Equippable inventory
 -- @usage function PLUGIN:InitializedPlugins()
-	-- local right_hand = ix.item.RegisterEquippableInv():New("right_hand") -- right_hand = inventory_type
+	-- local right_hand = ix.item.RegisterEquippableInv("right_hand") -- right_hand = inventory_type
 	-- right_hand:SetSize(1, 1) -- Can set own size
 	-- right_hand:SetIcon(Material("icon16/accept.png"))
 	
