@@ -124,7 +124,7 @@ do
 			new_inventory = self:GetCharacter():GetInventory(true)[1]:GetID()
 		end
 		
-		if (new_inventory <= 0) then
+		if (inventory_type and new_inventory <= 0) then
 			new_inventory = self:GetInventoryID(inventory_type)
 		end
 		

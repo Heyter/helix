@@ -38,7 +38,8 @@ ITEM.functions.EquipUn = {
 	OnCanRun = function(item)
 		local client = item.player
 
-		return !IsValid(item.entity) and IsValid(client) and item:CanUnequip(client) ~= false and item:IsEquipped()
+		return !IsValid(item.entity) and IsValid(client) and item:CanUnequip(client) ~= false and item:IsEquipped() and
+			hook.Run("CanPlayerUnequipItem", client, item) ~= false
 	end
 }
 
@@ -54,7 +55,8 @@ ITEM.functions.Equip = {
 	OnCanRun = function(item)
 		local client = item.player
 
-		return !IsValid(item.entity) and IsValid(client) and item:CanEquip(client) ~= false and not item:IsEquipped()
+		return !IsValid(item.entity) and IsValid(client) and item:CanEquip(client) ~= false and not item:IsEquipped() and
+			hook.Run("CanPlayerEquipItem", client, item) ~= false
 	end
 }
 
@@ -72,9 +74,6 @@ function ITEM:PostEquipped(client)
 end
 
 function ITEM:PostUnequipped(client)
-end
-
-function ITEM:PlayerDeath(client)
 end
 
 function ITEM:EquipItem(client, should_equip)
@@ -146,15 +145,3 @@ function ITEM:OnTransferred(curInv, newInventory)
 		end
 	end
 end
-
-hook.Add("PlayerDeath", "ixStripEquippableItem", function(client)
-	local character = client:GetCharacter()
-	
-	if (character) then
-		for _, v in pairs(client:GetEquipabbleItems()) do
-			if (v.base == "base_equippable" and v:IsEquipped()) then
-				v:PlayerDeath(client)
-			end
-		end
-	end
-end)
