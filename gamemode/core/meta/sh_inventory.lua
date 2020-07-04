@@ -56,11 +56,17 @@ end
 -- @param ItemObj [Item]
 -- @treturn [Number width, Number height]
 function META:GetItemSize(ItemObj)
-	if self and self.vars and self.vars.custom_slot then
-		return self.vars.custom_slot[1], self.vars.custom_slot[2]
+	local slot = self:IsEquippableSlot()
+	
+	if slot then
+		return slot[1], slot[2]
 	end
 
 	return ItemObj.width, ItemObj.height
+end
+
+function META:IsEquippableSlot()
+	return self and self.vars and self.vars.equippable_slot or false
 end
 
 -- this is pretty good to debug/develop function to use.

@@ -181,16 +181,9 @@ if (SERVER) then
 										local inventoryType = inventories[inventory:GetID()][3]
 
 										if (inventoryType) then
-											local inventoryVars = inventories[inventory:GetID()][4]
-											
-											if (inventoryVars) then
-												inventory.vars = inventoryVars
-											end
-											
 											inventory.vars.isBag = inventoryType
 											inventory.vars.inventory_type = inventoryType
-											-- inventory.vars.test_case_2 = "test_case_2"
-											
+
 											table.insert(character.vars.inv, inventory)
 										else
 											character.vars.inv[1] = inventory

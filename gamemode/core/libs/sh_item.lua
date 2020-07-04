@@ -97,46 +97,47 @@ function ix.item.Instance(index, uniqueID, itemData, x, y, callback, characterID
 	end
 end
 
-ix.item.equippable_inventories = {}
+ix.item.equippable_inventories = ix.item.equippable_inventories or {}
 
-function ix.item.RegisterEquippableInv()
-    return {
-        [1] = 1, -- width inventory
-        [2] = 1, -- height inventory
-        [3] = type, -- Inventory type
-        [4] = {}, -- Inventory Vars
-        [5] = {}, -- Derma
-        SetSize = function(this, w, h, bNotSetCustomSlot)
-            this[1] = w
-            this[2] = h
-            
-            if (not bNotSetCustomSlot) then
-                this[4].custom_slot = {w, h}
-            end
-        end,
-		SetInventoryVars = function(this, data)
-			this[4] = table.Merge(this[4], data)
-		end,
-        SetTitle = function(this, title)
-            this[5].title = title
-        end,
-		GetTitle = function(this)
-			return this[5].title
-		end,
-        SetIcon = function(this, icon)
-            this[5].icon = icon
-        end,
-		GetIcon = function(this)
-			return this[5].icon or "icon16/box.png"
-		end,
-		InventoryPaint = function(this, w, h)
-		end,
-        New = function(this, type)
-			this[3] = type
-            ix.item.equippable_inventories[type] = this
-            return this
-        end
-    }
+function ix.item.RegisterEquippableInv(inventory_type)
+	if (inventory_type) then
+		local data = {
+			[1] = 1, -- width inventory
+			[2] = 1, -- height inventory
+			[3] = inventory_type, -- Inventory type
+			[4] = {}, -- Inventory Vars
+			[5] = {}, -- Derma
+			SetSize = function(this, w, h, bNotSetCustomSlot)
+				this[1] = w
+				this[2] = h
+				
+				if (not bNotSetCustomSlot) then
+					this[4].equippable_slot = {w, h}
+				end
+			end,
+			SetInventoryVars = function(this, data)
+				this[4] = table.Merge(this[4], data)
+			end,
+			SetTitle = function(this, title)
+				this[5].title = title
+			end,
+			GetTitle = function(this)
+				return this[5].title
+			end,
+			SetIcon = function(this, icon)
+				this[5].icon = icon
+			end,
+			GetIcon = function(this)
+				return this[5].icon or "icon16/box.png"
+			end,
+			InventoryPaint = function(this, w, h)
+			end,
+		}
+		
+		ix.item.equippable_inventories[inventory_type] = data
+		
+		return data
+	end
 end
 
 function ix.item.RegisterInv(invType, w, h, isBag)
@@ -396,8 +397,12 @@ end
 do
 	ix.util.Include("helix/gamemode/core/meta/sh_inventory.lua")
 
-	function ix.item.CreateInv(w, h, id)
+	function ix.item.CreateInv(w, h, id, dataVars)
 		local inventory = setmetatable({w = w, h = h, id = id, slots = {}, vars = {}, receivers = {}}, ix.meta.inventory)
+			if (dataVars) then
+				inventory.vars = dataVars
+			end
+			
 			ix.item.inventories[id] = inventory
 
 		return inventory
@@ -441,7 +446,7 @@ do
 		else
 			for k, v in pairs(invID) do
 				inventories[k] = {v[1], v[2]}
-				ix.item.CreateInv(v[1], v[2], k)
+				ix.item.CreateInv(v[1], v[2], k, v[4])
 			end
 			
 			if (not bNotSetType) then
@@ -533,6 +538,10 @@ do
 					for k, v in pairs(invSlots) do
 						ix.item.inventories[k].slots = v
 					end
+					
+					print('===================RestoreInv======================')
+					PrintTable(ix.item.inventories)
+					print('===================================================')
 				end
 
 				if (callback) then

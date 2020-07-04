@@ -115,9 +115,14 @@ do
     -- Takes item only from the specified inventory.
     -- @param itemObj [Table]
     -- @param inventory_type [String]
-    -- @return [Boolean was the item transferred successfully, String text of the error that occurred]
 	function playerMeta:TransferItem(itemObj, inventory_type)
-		local new_inventory = inventory_type ~= 'NULL' and self:GetInventory(inventory_type) or self:GetCharacter():GetInventory(true)[1]:GetID()
+		local new_inventory = 0
+		
+		if (inventory_type) then
+			new_inventory = inventory_type ~= "NULL" and self:GetInventory(inventory_type) or self:GetCharacter():GetInventory(true)[1]:GetID()
+		else
+			new_inventory = self:GetCharacter():GetInventory(true)[1]:GetID()
+		end
 		
 		if (new_inventory <= 0) then
 			new_inventory = self:GetInventoryID(inventory_type)
@@ -140,7 +145,7 @@ do
 			
 			if (not should_reset and restoreInv > 0) then
 				ix.item.RestoreInv(restoreInv, w, h, function(inventory)
-					inventory.vars.custom_slot = {w, h}
+					inventory.vars.equippable_slot = {w, h}
 					inventory.vars.inventory_type = inventory_type
 					
 					inventory:SetOwner(character:GetID())
@@ -154,7 +159,7 @@ do
 				end, true)
 			else
 				ix.item.NewInv(character:GetID(), inventory_type, function(inventory)
-					inventory.vars.custom_slot = {w, h}
+					inventory.vars.equippable_slot = {w, h}
 					
 					table.insert(character.vars.inv, inventory)
 					

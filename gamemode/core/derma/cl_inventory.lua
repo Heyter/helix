@@ -180,31 +180,27 @@ function PANEL:DoRightClick()
 	end
 end
 
-function PANEL:OnDrop(bDragging, inventoryPanel, inventory, gridX, gridY)
-	local item = self.itemTable
-
-	if (!item or !bDragging) then
+function PANEL:OnDrop(bDragging, inventoryPanel, curInventory, gridX, gridY)
+	if (!bDragging) then
 		return
 	end
 	
+	local item = self.itemTable
 	local oldX, oldY = self.gridX, self.gridY
-
+	local inventoryID = self.inventoryID
+	
 	if (!IsValid(inventoryPanel)) then
-		local inventoryID = self.inventoryID
-
 		if (inventoryID) then
 			InventoryAction("drop", item.id, inventoryID, {})
 		end
-	elseif (oldX != gridX or oldY != gridY or self.inventoryID != inventoryPanel.invID) then
-		local targetInventory = ix.item.inventories[inventoryPanel.invID]
-		local itemW, itemH = targetInventory:GetItemSize(item)
-
+	elseif (oldX != gridX or oldY != gridY or inventoryID != inventoryPanel.invID) then
+		local itemW, itemH = curInventory:GetItemSize(item)
 		local bIsEmptySlot = inventoryPanel:IsAllEmpty(gridX, gridY, itemW, itemH, self)
+		
 		if (bIsEmptySlot) then
 			self:Move(gridX, gridY, inventoryPanel)
 		end
 		
-		local curInventory = ix.item.inventories[self:GetParent().invID]
 		if (curInventory) then
 			local itemObject = curInventory:GetItemAt(oldX, oldY)
 			if (!itemObject) then
@@ -376,6 +372,8 @@ function PANEL:SetInventory(inventory, bFitParent)
 		if (inventory.vars and inventory.vars.inventory_type) then
 			self.inventory_type = inventory.vars.inventory_type
 		end
+		
+		self.is_equippable_slot = inventory:IsEquippableSlot() or nil
 
 		if (IsValid(ix.gui.inv1) and ix.gui.inv1.childPanels and inventory != LocalPlayer():GetCharacter():GetInventory()) then
 			self:SetIconSize(ix.gui.inv1:GetIconSize())
@@ -483,6 +481,8 @@ function PANEL:BuildSlots()
 				slot.inventory_type = self.inventory_type
 			end
 			
+			slot.is_equippable_slot = self.is_equippable_slot
+			
 			slot:SetPos((x - 1) * iconSize + 4, (y - 1) * iconSize + self:GetPadding(2))
 			slot:SetSize(iconSize, iconSize)
 			slot.Paint = PaintSlot
@@ -519,10 +519,8 @@ function PANEL:PaintDragPreview(width, height, mouseX, mouseY, itemPanel)
 	if (item) then
 		local inventory = ix.item.inventories[self.invID]
 		
-		local gridW, gridH = inventory:GetItemSize({
-			width = itemPanel.gridW,
-			height = itemPanel.gridH
-		})
+		-- Set fully itemSize when item dragging
+		local gridW, gridH = itemPanel.is_equippable_slot and item.width or itemPanel.gridW, itemPanel.is_equippable_slot and item.height or itemPanel.gridH
 		
 		local dropX = math.ceil((mouseX - 4 - (gridW - 1) * 32) / iconSize)
 		local dropY = math.ceil((mouseY - self:GetPadding(2) - (gridH - 1) * 32) / iconSize)
@@ -658,6 +656,8 @@ function PANEL:AddIcon(model, x, y, w, h, skin)
 
 		panel:SetInventoryID(inventory:GetID())
 		panel:SetItemTable(itemTable)
+		
+		panel.is_equippable_slot = inventory:IsEquippableSlot() or nil
 
 		if (self.panels[itemTable:GetID()]) then
 			self.panels[itemTable:GetID()]:Remove()
@@ -723,13 +723,19 @@ function PANEL:ReceiveDrop(panels, bDropped, menuIndex, x, y)
 		local inventory = ix.item.inventories[self.invID]
 
 		if (inventory and panel.OnDrop) then
-			local itemW, itemH = inventory:GetItemSize({
+			local item = panel.itemTable
+			
+			local gridW, gridH = inventory:GetItemSize({
 				width = panel.gridW,
 				height = panel.gridH
 			})
 			
-			local dropX = math.ceil((x - 4 - (itemW - 1) * 32) / self.iconSize)
-			local dropY = math.ceil((y - self:GetPadding(2) - (itemH - 1) * 32) / self.iconSize)
+			if panel.is_equippable_slot and not self.is_equippable_slot then
+				gridW, gridH = item.width, item.height
+			end
+			
+			local dropX = math.ceil((x - 4 - (gridW - 1) * 32) / self.iconSize)
+			local dropY = math.ceil((y - self:GetPadding(2) - (gridH - 1) * 32) / self.iconSize)
 
 			panel:OnDrop(true, self, inventory, dropX, dropY)
 		end
@@ -797,7 +803,7 @@ hook.Add("CreateMenuButtons", "ixInventory", function(tabs)
 					panel = vgui.Create("ixInventory", IsValid(parent) and parent or nil)
 					panel:SetInventory(inventory)
 					panel:SetSizable(false)
-					panel:SetTitle(inventories:GetTitle() or inventory.vars and inventory.vars.inventory_type or "Equipped Slot")
+					panel:SetTitle(inventories and inventories:GetTitle() or inventory.vars and inventory.vars.inventory_type or "Equipped Slot")
 
 					if (parent != ix.gui.menuInventoryContainer) then
 						panel:Center()
