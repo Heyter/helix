@@ -56,7 +56,7 @@ end
 -- @param ItemObj [Item]
 -- @treturn [Number width, Number height]
 function META:GetItemSize(ItemObj)
-	local slot = self:IsEquippableSlot()
+	local slot = self.IsEquippableSlot and self:IsEquippableSlot() or nil
 	
 	if slot then
 		return slot[1], slot[2]

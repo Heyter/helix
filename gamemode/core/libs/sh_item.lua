@@ -163,6 +163,10 @@ function ix.item.NewInv(owner, invType, callback, bStopSync)
 			if (invType) then
 				inventory.vars.inventory_type = invType
 			end
+			
+			if (invData.isBag) then
+				inventory.vars.isBag = true
+			end
 
 			if (isnumber(owner) and owner > 0) then
 				local character = ix.char.loaded[owner]
@@ -538,10 +542,6 @@ do
 					for k, v in pairs(invSlots) do
 						ix.item.inventories[k].slots = v
 					end
-					
-					print('===================RestoreInv======================')
-					PrintTable(ix.item.inventories)
-					print('===================================================')
 				end
 
 				if (callback) then

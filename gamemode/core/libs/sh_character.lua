@@ -181,7 +181,12 @@ if (SERVER) then
 										local inventoryType = inventories[inventory:GetID()][3]
 
 										if (inventoryType) then
-											inventory.vars.isBag = inventoryType
+											local invBag = ix.item.inventoryTypes[inventoryType]
+											
+											if (invBag and invBag.isBag) then
+												inventory.vars.isBag = true
+											end
+											
 											inventory.vars.inventory_type = inventoryType
 
 											table.insert(character.vars.inv, inventory)

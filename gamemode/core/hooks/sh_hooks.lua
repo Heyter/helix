@@ -560,7 +560,8 @@ function GM:CanTransferItem(itemObject, curInv, inventory)
 	end
 	
 	if (inventory and inventory.id != 0 and curInv.id != inventory.id) then
-		if (inventory:IsEquippableSlot() and (!itemObject.equip_slot or itemObject.equip_inventory != (inventory.vars.inventory_type or ""))) then
+		local equip = inventory.IsEquippableSlot and inventory:IsEquippableSlot() or false
+		if (equip and (!itemObject.equip_slot or itemObject.equip_inventory != (inventory.vars.inventory_type or ""))) then
 			
 			local owner = itemObject:GetOwner()
 			if (IsValid(owner)) then

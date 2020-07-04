@@ -373,7 +373,7 @@ function PANEL:SetInventory(inventory, bFitParent)
 			self.inventory_type = inventory.vars.inventory_type
 		end
 		
-		self.is_equippable_slot = inventory:IsEquippableSlot() or nil
+		self.is_equippable_slot = inventory.IsEquippableSlot and inventory:IsEquippableSlot() or nil
 
 		if (IsValid(ix.gui.inv1) and ix.gui.inv1.childPanels and inventory != LocalPlayer():GetCharacter():GetInventory()) then
 			self:SetIconSize(ix.gui.inv1:GetIconSize())
@@ -657,7 +657,7 @@ function PANEL:AddIcon(model, x, y, w, h, skin)
 		panel:SetInventoryID(inventory:GetID())
 		panel:SetItemTable(itemTable)
 		
-		panel.is_equippable_slot = inventory:IsEquippableSlot() or nil
+		panel.is_equippable_slot = inventory.IsEquippableSlot and inventory:IsEquippableSlot() or nil
 
 		if (self.panels[itemTable:GetID()]) then
 			self.panels[itemTable:GetID()]:Remove()
@@ -784,11 +784,11 @@ hook.Add("CreateMenuButtons", "ixInventory", function(tabs)
 
 			ix.gui.inv1 = panel
 			
-			-- Equipped inventories
+			-- Equippable inventories
 			for inventory_type, invID in pairs(LocalPlayer():GetInventory()) do
 				panel = ix.gui["inv"..invID]
 				inventory = ix.item.inventories[invID]
-				if inventory.vars and (not inventory.vars.inventory_type or inventory.vars.inventory_type == "NULL") then
+				if inventory.vars and (not inventory.vars.inventory_type or inventory.vars.inventory_type == "NULL" or inventory.vars.isBag) then
 					continue
 				end
 				
@@ -799,11 +799,11 @@ hook.Add("CreateMenuButtons", "ixInventory", function(tabs)
 				end
 				
 				if (inventory and inventory.slots) then
-					local inventories = ix.item.equippable_inventories[inventory_type]
+					local equip_inventories = ix.item.equippable_inventories[inventory_type]
 					panel = vgui.Create("ixInventory", IsValid(parent) and parent or nil)
 					panel:SetInventory(inventory)
 					panel:SetSizable(false)
-					panel:SetTitle(inventories and inventories:GetTitle() or inventory.vars and inventory.vars.inventory_type or "Equipped Slot")
+					panel:SetTitle(equip_inventories and equip_inventories:GetTitle() or inventory.vars and inventory.vars.inventory_type or "Equipped Slot")
 
 					if (parent != ix.gui.menuInventoryContainer) then
 						panel:Center()
@@ -817,11 +817,10 @@ hook.Add("CreateMenuButtons", "ixInventory", function(tabs)
 
 					ix.gui["inv"..invID] = panel
 				else
-					ErrorNoHalt("[Helix] Attempt to view an uninitialized inventory '"..invID.."'\n")
+					ErrorNoHalt("[Helix] Attempt to view an uninitialized equippable inventory '"..invID.."'\n")
 				end
 			end
 			
-
 			if (ix.option.Get("openBags", true)) then
 				for _, v in pairs(inventory:GetItems()) do
 					if (!v.isBag) then
