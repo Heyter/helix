@@ -8,19 +8,19 @@ ITEM.height = 2
 ITEM.isWeapon = true
 ITEM.isGrenade = false
 
-ITEM.equip_slot = 'slot_primary'
+ITEM.equip_slot = 'slot_weapon'
 
 -- Inventory drawing
 if (CLIENT) then
 	function ITEM:PaintOver(item, w, h)
-		if (item:IsEquipped()) then
+		if (item:IsEquip()) then
 			surface.SetDrawColor(110, 255, 110, 100)
 			surface.DrawRect(w - 14, h - 14, 8, 8)
 		end
 	end
 
 	function ITEM:PopulateTooltip(tooltip)
-		if (self:IsEquipped()) then
+		if (self:IsEquip()) then
 			local name = tooltip:GetRow("name")
 			name:SetBackgroundColor(derma.GetColor("Success", tooltip))
 		end
@@ -89,22 +89,10 @@ function ITEM:PostUnequipped(client, bRemoveItem)
 	end
 end
 
-function ITEM:CanEquip(client)
-	if (newInventory and self:IsEquipped()) then
-		if (IsValid(client)) then
-			client:NotifyLocalized("equippedWeapon")
-		end
-
-		return false
-	end
-
-	return true
-end
-
 function ITEM:OnSave()
 	local weapon = self.player:GetWeapon(self.class)
 
-	if (IsValid(weapon) and weapon.ixItem == self and self:IsEquipped()) then
+	if (IsValid(weapon) and weapon.ixItem == self and self:IsEquip()) then
 		self:SetData("ammo", weapon:Clip1())
 	end
 end
@@ -138,8 +126,9 @@ end
 
 hook.Add("PlayerDeath", "ixStripEquippableClip", function(client)
 	for _, v in pairs(client:GetEquipabbleItems()) do
-		if (v.isWeapon and v:IsEquipped()) then
+		if (v.isWeapon and v:IsEquip() and self:CanUnequip(client) ~= false) then
 			v:SetData("ammo", nil)
+			client:TransferItem(v, 'NULL')
 
 			if (v.pacData) then
 				v:RemovePAC(client)

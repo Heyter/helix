@@ -228,6 +228,9 @@ function ix.item.Register(uniqueID, baseID, isBaseItem, path, luaGenerated)
 			ITEM.hooks = ITEM.hooks or {}
 			ITEM.postHooks = ITEM.postHooks or {}
 			ITEM.functions = ITEM.functions or {}
+			ITEM.IsEquip = function(this)
+				return this:GetData("equip", false)
+			end
 			ITEM.functions.drop = ITEM.functions.drop or {
 				tip = "dropTip",
 				icon = "icon16/world.png",

@@ -72,7 +72,6 @@ if (SERVER) then
 						local w, h = ix.config.Get("inventoryWidth"), ix.config.Get("inventoryHeight")
 						local character = ix.char.New(data, lastID, client, data.steamID)
 						local inventory = ix.item.CreateInv(w, h, invLastID)
-						-- inventory.vars.test_case_3 = "test_case_3"
 						character.vars.inv = {inventory}
 						inventory:SetOwner(lastID)
 
@@ -202,7 +201,6 @@ if (SERVER) then
 										insertQuery:Callback(function(_, status, lastID)
 											local w, h = ix.config.Get("inventoryWidth"), ix.config.Get("inventoryHeight")
 											local inventory = ix.item.CreateInv(w, h, lastID)
-											-- inventory.vars.test_case_1 = "test_case_1"
 											inventory:SetOwner(charID)
 
 											character.vars.inv = {

@@ -561,8 +561,9 @@ function GM:CanTransferItem(itemObject, curInv, inventory)
 	
 	if (inventory and inventory.id != 0 and curInv.id != inventory.id) then
 		local equip = inventory.IsEquippableSlot and inventory:IsEquippableSlot() or false
-		if (equip and (!itemObject.equip_slot or itemObject.equip_inventory != (inventory.vars.inventory_type or ""))) then
-			
+		local inv_type = inventory.vars.inventory_type
+		
+		if (equip and (!itemObject.equip_slot or itemObject.equip_inventory ~= inv_type)) then
 			local owner = itemObject:GetOwner()
 			if (IsValid(owner)) then
 				owner:NotifyLocalized("cantEquipItem")
