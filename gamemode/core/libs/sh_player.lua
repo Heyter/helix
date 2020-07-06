@@ -101,10 +101,13 @@ do
 		character = character or self:GetCharacter()
 		
 		for k, v in ipairs(character:GetInventory(true)) do
-			if (istable(v) and v.vars and v.vars.inventory_type) then
-				self.inventories[v.vars.inventory_type] = v.id
+			local inv_type = v.vars.inventory_type
+			if (istable(v) and v.vars and inv_type) then
+				self.inventories[inv_type] = v.id
 			end
 		end
+		
+		return true
 	end
 	
 	function playerMeta:GetEquippableItems(inventory_type)

@@ -289,7 +289,16 @@ function GM:CharacterLoaded(character)
 			end
 		end)
 		
-		client:RegisterInventories(character)
+		if (client:RegisterInventories(character)) then
+			-- Recreate equippable inventories, if player doesn't have them.
+			if (IsValid(client) and character) then
+				for inventory_type in pairs(ix.item.equippable_inventories) do
+					if client:GetInventory(inventory_type) == 0 then
+						client:CreateEquippableInventory(inventory_type, character, true)
+					end
+				end
+			end
+		end
 	end
 end
 
