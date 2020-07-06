@@ -559,7 +559,7 @@ function GM:CanTransferItem(itemObject, curInv, inventory)
 		return
 	end
 	
-	if (inventory and inventory.id != 0 and curInv.id != inventory.id) then
+	if (inventory and inventory.id != 0 and curInv.id != inventory.id and inventory.vars) then
 		local equip = inventory.IsEquippableSlot and inventory:IsEquippableSlot() or false
 		local inv_type = inventory.vars.inventory_type
 		

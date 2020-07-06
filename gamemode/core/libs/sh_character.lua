@@ -153,7 +153,7 @@ if (SERVER) then
 							invQuery:Where("character_id", charID)
 							invQuery:Callback(function(info)
 								if (istable(info) and #info > 0) then
-									local inventories = {vars = {}}
+									local inventories = {}
 
 									for _, v2 in pairs(info) do
 										if (v2.inventory_type and isstring(v2.inventory_type) and v2.inventory_type == "NULL") then
