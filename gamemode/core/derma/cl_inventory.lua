@@ -784,6 +784,16 @@ hook.Add("CreateMenuButtons", "ixInventory", function(tabs)
 
 			ix.gui.inv1 = panel
 			
+			if (ix.option.Get("openBags", true)) then
+				for _, v in pairs(inventory:GetItems()) do
+					if (!v.isBag) then
+						continue
+					end
+
+					v.functions.View.OnClick(v)
+				end
+			end
+			
 			-- Equippable inventories
 			for inventory_type, invID in pairs(LocalPlayer():GetInventory()) do
 				panel = ix.gui["inv"..invID]
@@ -818,16 +828,6 @@ hook.Add("CreateMenuButtons", "ixInventory", function(tabs)
 					ix.gui["inv"..invID] = panel
 				else
 					ErrorNoHalt("[Helix] Attempt to view an uninitialized equippable inventory '"..invID.."'\n")
-				end
-			end
-			
-			if (ix.option.Get("openBags", true)) then
-				for _, v in pairs(inventory:GetItems()) do
-					if (!v.isBag) then
-						continue
-					end
-
-					v.functions.View.OnClick(v)
 				end
 			end
 
