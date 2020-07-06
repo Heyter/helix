@@ -107,7 +107,7 @@ do
 		end
 	end
 	
-	function playerMeta:GetEquipabbleItems(inventory_type)
+	function playerMeta:GetEquippableItems(inventory_type)
 		local items, invSkip = {}, {}
 		
 		if (IsValid(self) and self.inventories) then

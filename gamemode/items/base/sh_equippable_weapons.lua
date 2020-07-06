@@ -125,7 +125,7 @@ function ITEM:RemovePAC(client)
 end
 
 hook.Add("PlayerDeath", "ixStripEquippableClip", function(client)
-	for _, v in pairs(client:GetEquipabbleItems()) do
+	for _, v in pairs(client:GetEquippableItems()) do
 		if (v.isWeapon and v:IsEquip() and self:CanUnequip(client) ~= false) then
 			v:SetData("ammo", nil)
 			client:TransferItem(v, 'NULL')

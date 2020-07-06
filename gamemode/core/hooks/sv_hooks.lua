@@ -553,7 +553,7 @@ function GM:PostPlayerLoadout(client)
 	
 	-- Equippable inventory
 	if (character) then
-		for _, v in pairs(client:GetEquipabbleItems()) do
+		for _, v in pairs(client:GetEquippableItems()) do
 			v:Call("OnLoadout", client)
 		end
 	end
