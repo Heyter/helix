@@ -369,8 +369,9 @@ function PANEL:SetInventory(inventory, bFitParent)
 		local invWidth, invHeight = inventory:GetSize()
 		self.invID = inventory:GetID()
 		
-		if (inventory.vars and inventory.vars.inventory_type) then
-			self.inventory_type = inventory.vars.inventory_type
+		local inventory_type = inventory:GetData("inventory_type", false)
+		if (inventory_type) then
+			self.inventory_type = inventory_type
 		end
 		
 		self.is_equippable_slot = inventory.IsEquippableSlot and inventory:IsEquippableSlot() or nil
@@ -456,7 +457,7 @@ function PANEL:BuildSlots()
 		
 		local equippableInv = ix.item.equippable_inventories[slot.inventory_type]
 		if (equippableInv) then
-			equippableInv:InventoryPaint(w, h)
+			equippableInv:PaintSlot(w, h, slot)
 		end
 	end
 
@@ -798,32 +799,22 @@ hook.Add("CreateMenuButtons", "ixInventory", function(tabs)
 			for inventory_type, invID in pairs(LocalPlayer():GetInventory()) do
 				panel = ix.gui["inv"..invID]
 				inventory = ix.item.inventories[invID]
-				if inventory.vars and (not inventory.vars.inventory_type or inventory.vars.inventory_type == "NULL" or inventory.vars.isBag) then
+
+				if inventory:GetData("inventory_type", 'NULL') == "NULL" or inventory:GetData("isBag") then
 					continue
 				end
-				
-				local parent = IsValid(ix.gui.menuInventoryContainer) and ix.gui.menuInventoryContainer or ix.gui.openedStorage
-				
+
 				if (IsValid(panel)) then
 					panel:Remove()
 				end
 				
 				if (inventory and inventory.slots) then
 					local equip_inventories = ix.item.equippable_inventories[inventory_type]
-					panel = vgui.Create("ixInventory", IsValid(parent) and parent or nil)
+					panel = canvas:Add("ixInventory")
 					panel:SetInventory(inventory)
 					panel:SetSizable(false)
-					panel:SetTitle(equip_inventories and equip_inventories:GetTitle() or inventory.vars and inventory.vars.inventory_type or "Equipped Slot")
-
-					if (parent != ix.gui.menuInventoryContainer) then
-						panel:Center()
-
-						if (parent == ix.gui.openedStorage) then
-							panel:MakePopup()
-						end
-					else
-						panel:MoveToFront()
-					end
+					panel:SetDraggable(equip_inventories and equip_inventories:GetData("isDraggable", false, "derma") or false)
+					panel:SetTitle(equip_inventories and equip_inventories:GetTitle() or inventory:GetData("inventory_type", "Equipped Slot"))
 
 					ix.gui["inv"..invID] = panel
 				else

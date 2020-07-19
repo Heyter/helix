@@ -547,24 +547,28 @@ end
 function GM:PostPlayerLoadout(client)
 	-- Reload All Attrib Boosts
 	local character = client:GetCharacter()
+	
+	if (character) then
+		client.BoyNextDoor = {}
+		for _, v in pairs(client:GetCharacter():GetInventory(true)) do
+			if v.GetItems then
+				for itemID, v2 in pairs(v:GetItems()) do
+					if (istable(v2) and not client.BoyNextDoor[v2.id]) then
+						client.BoyNextDoor[v2.id] = true
+						
+						v2:Call("OnLoadout", client)
 
-	if (character:GetInventory()) then
-		for _, v in pairs(character:GetInventory():GetItems()) do
-			v:Call("OnLoadout", client)
-
-			if (v:GetData("equip") and v.attribBoosts) then
-				for attribKey, attribValue in pairs(v.attribBoosts) do
-					character:AddBoost(v.uniqueID, attribKey, attribValue)
+						if (v2:GetData("equip") and v2.attribBoosts) then
+							for attribKey, attribValue in pairs(v2.attribBoosts) do
+								character:AddBoost(v2.uniqueID, attribKey, attribValue)
+							end
+						end
+					end
 				end
 			end
 		end
-	end
-	
-	-- Equippable inventory
-	if (character) then
-		for _, v in pairs(client:GetEquippableItems()) do
-			v:Call("OnLoadout", client)
-		end
+		
+		client.BoyNextDoor = nil
 	end
 
 	if (ix.config.Get("allowVoice")) then

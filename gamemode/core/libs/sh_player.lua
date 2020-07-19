@@ -109,36 +109,22 @@ do
 		return true
 	end
 	
-	function playerMeta:GetEquippableItems(inventory_type)
-		local items, invSkip = {}, {}
+	function playerMeta:GetEquippableItems(inventory_type, callback)
+		local inventories = self:GetCharacter():GetInventory(true)
 		
-		if (IsValid(self) and self.inventories) then
-			local invData = self.inventories
-			
-			if (inventory_type and isstring(inventory_type) and invData[inventory_type]) then
-				invData = {[1] = invData[inventory_type]}
-			end
-			
-			for _, inventoryID in pairs(invData) do
-				if (inventoryID > 0 and not invSkip[inventoryID]) then
-					invSkip[inventoryID] = true
-					
-					local inventory = ix.item.inventories[inventoryID]
-					if istable(inventory) and inventory.slots then
-						for _, v in pairs(inventory.slots) do
-							for _, v2 in pairs(v) do
-								if (istable(v) and !items[v2.id] and v2.invID == inventory.id and v2.equip_slot) then
-									items[v2.id] = v2
-								end
-							end
-						end
+		if (inventory_type and self.inventories[inventory_type]) then
+			inventories = self:GetCharacter():GetInventory(true)[self.inventories[inventory_type]]
+		end
+		
+		for _, v in pairs(inventories) do
+			if v.GetEquippableItems then
+				for _, v2 in pairs(v:GetEquippableItems()) do
+					if callback then
+						callback(v2)
 					end
 				end
 			end
 		end
-		
-		invSkip = nil
-		return items
 	end
 
 	function playerMeta:GetClassData()

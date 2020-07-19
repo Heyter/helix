@@ -97,48 +97,10 @@ function ix.item.Instance(index, uniqueID, itemData, x, y, callback, characterID
 	end
 end
 
+-- Equippable inventory meta
 ix.item.equippable_inventories = ix.item.equippable_inventories or {}
-
-function ix.item.RegisterEquippableInv(inventory_type)
-	if (inventory_type) then
-		local data = {
-			[1] = 1, -- width inventory
-			[2] = 1, -- height inventory
-			[3] = inventory_type, -- Inventory type
-			[4] = {}, -- Inventory Vars
-			[5] = {}, -- Derma
-			SetSize = function(this, w, h, bNotSetCustomSlot)
-				this[1] = w
-				this[2] = h
-				
-				if (not bNotSetCustomSlot) then
-					this[4].equippable_slot = {w, h}
-				end
-			end,
-			SetInventoryVars = function(this, data)
-				this[4] = table.Merge(this[4], data)
-			end,
-			SetTitle = function(this, title)
-				this[5].title = title
-			end,
-			GetTitle = function(this)
-				return this[5].title
-			end,
-			SetIcon = function(this, icon)
-				this[5].icon = icon
-			end,
-			GetIcon = function(this)
-				return this[5].icon or "icon16/box.png"
-			end,
-			InventoryPaint = function(this, w, h)
-			end,
-		}
-		
-		ix.item.equippable_inventories[inventory_type] = data
-		
-		return data
-	end
-end
+ix.util.Include("helix/gamemode/core/meta/sh_equippable_inventory.lua")
+-----
 
 function ix.item.RegisterInv(invType, w, h, isBag)
 	ix.item.inventoryTypes[invType] = {w = w, h = h}

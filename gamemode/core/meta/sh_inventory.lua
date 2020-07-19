@@ -17,6 +17,16 @@ META.h = META.h or 4
 META.vars = META.vars or {}
 META.receivers = META.receivers or {}
 
+--- Returns the value of the stored key if it exists, the default otherwise.
+-- If no default is given, then nil is returned.
+-- @param key The key to look up data  with
+-- @param default The value that should be returned if no such data was found. By default this is nil
+-- @return A value corresponding to the key
+function META:GetData(key, default)
+	local value = self.vars[key]
+	return value ~= nil and value or default
+end
+
 --- Returns a string representation of this inventory
 -- @realm shared
 -- @treturn string String representation
@@ -410,17 +420,34 @@ function META:GetItems(onlyMain)
 		for _, v2 in pairs(v) do
 			if (istable(v2) and !items[v2.id]) then
 				items[v2.id] = v2
+				
+				if onlyMain then continue end
 
 				v2.data = v2.data or {}
-				local isBag = v2.data.id
-				if (isBag and isBag != self:GetID() and onlyMain != true) then
-					local bagInv = ix.item.inventories[isBag]
+				local inventoryID = v2.data.id
 
-					if (bagInv) then
-						local bagItems = bagInv:GetItems()
+				if (self:GetID() ~= inventoryID or v2.invID == self.id and v2.equip_slot) then
+					local inv = ix.item.inventories[inventoryID]
 
-						table.Merge(items, bagItems)
+					if (inv) then
+						table.Merge(items, inv:GetItems())
 					end
+				end
+			end
+		end
+	end
+
+	return items
+end
+
+function META:GetEquippableItems()
+	local items = {}
+
+	for _, v in pairs(self.slots) do
+		for _, v2 in pairs(v) do
+			if (istable(v2) and !items[v2.id]) then
+				if v2.invID == self.id and v2.equip_slot then
+					items[v2.id] = v2
 				end
 			end
 		end

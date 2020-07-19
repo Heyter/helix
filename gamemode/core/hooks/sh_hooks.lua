@@ -561,7 +561,7 @@ function GM:CanTransferItem(itemObject, curInv, inventory)
 	
 	if (inventory and inventory.id != 0 and curInv.id != inventory.id and inventory.vars) then
 		local equip = inventory.IsEquippableSlot and inventory:IsEquippableSlot() or false
-		local inv_type = inventory.vars.inventory_type
+		local inv_type = inventory:GetData("inventory_type")
 		
 		if (equip and (!itemObject.equip_slot or itemObject.equip_inventory ~= inv_type)) then
 			local owner = itemObject:GetOwner()
@@ -580,7 +580,7 @@ function GM:CanTransferItem(itemObject, curInv, inventory)
 
 	-- don't allow bags to be put inside bags
 	if (inventory.id != 0 and curInv.id != inventory.id) then
-		if (inventory.vars and inventory.vars.isBag) then
+		if (inventory:GetData("isBag", false)) then
 			local owner = itemObject:GetOwner()
 
 			if (IsValid(owner)) then

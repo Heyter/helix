@@ -125,16 +125,18 @@ function ITEM:RemovePAC(client)
 end
 
 hook.Add("PlayerDeath", "ixStripEquippableClip", function(client)
-	for _, v in pairs(client:GetEquippableItems()) do
-		if (v.isWeapon and v:IsEquip() and v:CanUnequip(client) ~= false) then
-			v:SetData("ammo", nil)
-			client:TransferItem(v, 'NULL')
+	client:GetEquippableItems(nil, function(itemObject)
+		if (istable(itemObject) and itemObject.isWeapon and itemObject:IsEquip() and itemObject:CanUnequip(client) ~= false) then
+			print(itemObject, 'ixStripEquippableClip')
+			
+			itemObject:SetData("ammo", nil)
+			client:TransferItem(itemObject, 'NULL')
 
-			if (v.pacData) then
-				v:RemovePAC(client)
+			if (itemObject.pacData) then
+				itemObject:RemovePAC(client)
 			end
 		end
-	end
+	end)
 end)
 
 hook.Add("EntityRemoved", "ixRemoveEquippableGrenade", function(entity)
