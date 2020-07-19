@@ -127,8 +127,6 @@ end
 hook.Add("PlayerDeath", "ixStripEquippableClip", function(client)
 	client:GetEquippableItems(nil, function(itemObject)
 		if (istable(itemObject) and itemObject.isWeapon and itemObject:IsEquip() and itemObject:CanUnequip(client) ~= false) then
-			print(itemObject, 'ixStripEquippableClip')
-			
 			itemObject:SetData("ammo", nil)
 			client:TransferItem(itemObject, 'NULL')
 

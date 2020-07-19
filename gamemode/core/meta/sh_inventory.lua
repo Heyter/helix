@@ -424,10 +424,10 @@ function META:GetItems(onlyMain)
 				if onlyMain then continue end
 
 				v2.data = v2.data or {}
-				local inventoryID = v2.data.id
-
-				if (self:GetID() ~= inventoryID or v2.invID == self.id and v2.equip_slot) then
-					local inv = ix.item.inventories[inventoryID]
+				local isBag = v2.data.id
+				
+				if (isBag and isBag ~= self:GetID()) then
+					local inv = ix.item.inventories[isBag]
 
 					if (inv) then
 						table.Merge(items, inv:GetItems())
