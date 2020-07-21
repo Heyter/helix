@@ -19,7 +19,7 @@ if (CLIENT) then
 	end
 
 	function ITEM:PopulateTooltip(tooltip)
-		if (item:IsEquip()) then
+		if (self:IsEquip()) then
 			local name = tooltip:GetRow("name")
 			name:SetBackgroundColor(derma.GetColor("Success", tooltip))
 		end
@@ -105,12 +105,16 @@ function ITEM:CanTransfer(oldInventory, newInventory)
 				return false
 			end
 			
+			if self.equip_slot_skip then
+				return true
+			end
+			
 			for _, v in pairs(newInventory:GetItems()) do
 				if v.equip_slot and v.equip_inventory == self.equip_inventory and v:IsEquip() and v.id ~= self.id then
 					if (not ix.item.instances[v.id]) then
 						return false
 					end
-					
+
 					if v.equip_slot == self.equip_slot then
 						if (IsValid(client)) then
 							client:NotifyLocalized("slotOccupied")

@@ -374,7 +374,7 @@ function PANEL:SetInventory(inventory, bFitParent)
 			self.inventory_type = inventory_type
 		end
 		
-		self.is_equippable_slot = inventory.IsEquippableSlot and inventory:IsEquippableSlot() or nil
+		self.is_equippable_slot = inventory:GetData("equippable_slot", nil)
 
 		if (IsValid(ix.gui.inv1) and ix.gui.inv1.childPanels and inventory != LocalPlayer():GetCharacter():GetInventory()) then
 			self:SetIconSize(ix.gui.inv1:GetIconSize())
@@ -658,7 +658,7 @@ function PANEL:AddIcon(model, x, y, w, h, skin)
 		panel:SetInventoryID(inventory:GetID())
 		panel:SetItemTable(itemTable)
 		
-		panel.is_equippable_slot = inventory.IsEquippableSlot and inventory:IsEquippableSlot() or nil
+		panel.is_equippable_slot = inventory:GetData("equippable_slot", nil)
 
 		if (self.panels[itemTable:GetID()]) then
 			self.panels[itemTable:GetID()]:Remove()
